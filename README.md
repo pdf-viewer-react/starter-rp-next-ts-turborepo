@@ -1,84 +1,190 @@
-# Turborepo starter
+# React PDF Starter Toolkit for Next.js and TypeScript in Turborepo
 
-This Turborepo starter is maintained by the Turborepo core team.
+Welcome to the React PDF Starter Toolkit! This repository provides a comprehensive guide on integrating React PDF with Nextjs and TypeScript in Turborepo. It showcases how React PDF can be integrated and rendered as part of a monorepo project.
 
-## Using this example
+## Table of Contents
 
-Run the following command:
+- [Usage](#usage)
+  - [Project Setup](#project-setup)
+  - [Running the Example Project](#running-the-example-project)
+- [Examples](#examples)
 
-```sh
-npx create-turbo@latest
+## Usage
+
+### Project Setup
+
+1. **Clone the Repository**: If you haven't already, clone the repository and navigate into the project directory.
+
+   ```bash
+   git clone https://github.com/reactpdf/starter-rp-next-ts-turborepo.git
+   cd starter-rp-next-ts-turborepo
+   ```
+
+2. **Install Dependencies**: Install the necessary dependencies using npm, yarn, pnpm or bun.
+
+   ```bash
+   npm install
+   # or
+   yarn install
+   # or
+   pnpm install
+   # or
+   bun install
+   ```
+
+### Running the Example Project
+
+This repository includes an example project to demonstrate React PDF in action.
+
+1. **Start the Development Server**: Use the following command to start the development server
+
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   # or
+   pnpm run dev
+   # or
+   bun run dev
+   ```
+
+2. **Open in Browser**: Open your browser and navigate to `http://localhost:3000` (or the port specified in your terminal) to see the example project in action
+
+### Using the React PDF Component
+
+Once the example project is running, you can explore the source code to see how the React PDF component is integrated. Here is a brief overview:
+
+1.  **Import the component**: Import the desired React PDF component into your codes
+
+```tsx
+import {
+	RPProvider,
+	RPDefaultLayout,
+	RPPages,
+	RPProviderProps,
+	RPLayoutProps,
+} from "@pdf-viewer/react";
+
+interface Props {
+	showToolbar?: boolean;
+	providerProps?: RPProviderProps;
+	defaultLayoutProps?: RPLayoutProps;
+}
+
+const AppPdfViewer = (props: Props) => {
+	const { showToolbar = true, providerProps, defaultLayoutProps } = props;
+
+	return (
+		<RPProvider
+			src="https://cdn.codewithmosh.com/image/upload/v1721763853/guides/web-roadmap.pdf"
+			{...providerProps}>
+			{showToolbar ? (
+				<RPDefaultLayout {...defaultLayoutProps}>
+					<RPPages />
+				</RPDefaultLayout>
+			) : (
+				<div style={{ width: "100%", height: "550px" }}>
+					<RPPages />
+				</div>
+			)}
+		</RPProvider>
+	);
+};
+
+export default AppPdfViewer;
 ```
 
-## What's inside?
+2. **Import Config Component**: Import the Config component
 
-This Turborepo includes the following packages/apps:
+```tsx
+import { RPConfig, RPConfigProps } from "@pdf-viewer/react";
+import { FC } from "react";
 
-### Apps and Packages
+const AppProviders: FC<RPConfigProps> = ({ children }) => (
+	<RPConfig licenseKey="your-license-key">{children}</RPConfig>
+);
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm build
+export default AppProviders;
 ```
 
-### Develop
+3. **Disable SSR for AppPdfViewer**: Disable SSR for the AppPdfViewer component by using `dynamic` from `next/dynamic` and set `ssr: false`
 
-To develop all apps and packages, run the following command:
+```tsx
+"use client";
+import dynamic from "next/dynamic";
 
-```
-cd my-turborepo
-pnpm dev
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
+export const LazyAppPdfViewer = dynamic(() => import("./AppPdfViewer"), {
+	ssr: false,
+});
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+4. **Disable SSR for AppProviders**: Disable SSR for AppProviders by using `dynamic` from `next/dynamic` and set `ssr: false`
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+```tsx
+"use client";
+import dynamic from "next/dynamic";
 
+export const LazyAppProviders = dynamic(() => import("./AppProviders"), {
+	ssr: false,
+});
 ```
-npx turbo link
+
+5. **Use the LazyAppProviders component in layout**: Add the React PDF component to your page
+
+```jsx
+import "./globals.css";
+import { LazyAppProviders } from "./components/LazyAppProviders";
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode,
+}>) {
+  return (
+    <html lang="en">
+      <body className={"antialiased"}>
+        <LazyAppProviders licenseKey="your-license-key">
+          <main>{children}</main>
+        </LazyAppProviders>
+      </body>
+    </html>
+  );
+}
 ```
 
-## Useful Links
+6. **Use the LazyAppPdfViewer component in page**: Add the React PDF component to your page
 
-Learn more about the power of Turborepo:
+```jsx
+import { LazyAppPdfViewer } from "./components/LazyAppPdfViewer";
 
-- [Tasks](https://turborepo.com/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turborepo.com/docs/core-concepts/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+export default function Home() {
+	return (
+		<div className="w-[1028px] h-[700px] mx-auto">
+			<h1>RP Starter Toolkit: Nextjs + Javascript</h1>
+			<br />
+			<h2>Default Toolbar</h2>
+			<LazyAppPdfViewer />
+			<h2>Without Toolbar</h2>
+			<LazyAppPdfViewer showToolbar={false} />
+			<h2>Mobile</h2>
+			<LazyAppPdfViewer defaultLayoutProps={{ style: { width: "500px" } }} />
+		</div>
+	);
+}
+```
+
+## Examples
+
+For more examples, please refer to the `apps/web/app/page.tsx` file in this repository:
+
+- Default Toolbar
+- Without Toolbar
+- Mobile View
+
+_Remark: If you would like more examples, feel free open an issue._
+
+For more configurations, please check the [documentation](https://docs.react-pdf.dev) site.
+
+---
+
+Thank you for using React PDF! We hope this toolkit helps you build amazing Next.js applications. If you have any questions or need further assistance on this example, please feel free to open an issue. Happy coding!
